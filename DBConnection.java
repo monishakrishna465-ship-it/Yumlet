@@ -10,10 +10,10 @@ public class DBConnection {
             "jdbc:mysql://localhost:3306/eatero";
 
     private static final String USERNAME =
-            "root";
+            ";
 
     private static final String PASSWORD =
-            "monisha@123";
+            ";
 
 
     	public static Connection getConnection() {
