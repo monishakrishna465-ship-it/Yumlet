@@ -1,3 +1,4 @@
+
 package com.tap.controllers;
 
 import java.io.IOException;
@@ -20,7 +21,6 @@ public class SignupController extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-
         userDao = new UserDaoImpl();
     }
 
@@ -29,7 +29,7 @@ public class SignupController extends HttpServlet {
                          HttpServletResponse response)
             throws ServletException, IOException {
 
-        response.sendRedirect("signup.jsp");
+        response.sendRedirect(request.getContextPath() + "/signup.jsp");
     }
 
     @Override
@@ -37,7 +37,7 @@ public class SignupController extends HttpServlet {
                           HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Get form data
+        request.setCharacterEncoding("UTF-8");
 
         String username = request.getParameter("username");
         String email = request.getParameter("email");
@@ -45,73 +45,63 @@ public class SignupController extends HttpServlet {
         String password = request.getParameter("password");
         String address = request.getParameter("address");
 
+        if (isEmpty(username) || isEmpty(email)
+                || isEmpty(phone) || isEmpty(password)
+                || isEmpty(address)) {
 
-        // Basic validation
-
-        if (username == null || username.trim().isEmpty()
-                || email == null || email.trim().isEmpty()
-                || phone == null || phone.trim().isEmpty()
-                || password == null || password.trim().isEmpty()
-                || address == null || address.trim().isEmpty()) {
-
-            request.setAttribute(
-                    "errorMessage",
-                    "Please fill in all the fields."
-            );
-
-            request.getRequestDispatcher("signup.jsp")
-                   .forward(request, response);
-
+            showError(request, response,
+                    "Please fill in all the fields.");
             return;
         }
 
+        if (password.length() < 6) {
+            showError(request, response,
+                    "Password must contain at least 6 characters.");
+            return;
+        }
 
-        // Check whether email already exists
+        email = email.trim();
 
         User existingUser = userDao.getUserByEmail(email);
 
         if (existingUser != null) {
-
-            request.setAttribute(
-                    "errorMessage",
-                    "An account with this email already exists."
-            );
-
-            request.getRequestDispatcher("signup.jsp")
-                   .forward(request, response);
-
+            showError(request, response,
+                    "An account with this email already exists.");
             return;
         }
 
-
-        // Create User object
-
         User user = new User();
-
         user.setUsername(username.trim());
-        user.setPassword(password);
-        user.setEmail(email.trim());
+        user.setEmail(email);
         user.setPhone(phone.trim());
+        user.setPassword(password);
         user.setAddress(address.trim());
-
-        // Normal customer account
-
         user.setRole("USER");
-
-
-        // Save user
 
         userDao.addUser(user);
 
-
-        // Show success message
-
-        request.setAttribute(
-                "successMessage",
-                "Account created successfully! Please login."
+        // Show a success message on the login page.
+        request.getSession().setAttribute(
+                "signupSuccess",
+                "Account created successfully! Please log in."
         );
 
-        request.getRequestDispatcher("signup.jsp")
+        response.sendRedirect(
+                request.getContextPath() + "/login.jsp"
+        );
+    }
+
+    private boolean isEmpty(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
+    private void showError(HttpServletRequest request,
+                           HttpServletResponse response,
+                           String message)
+            throws ServletException, IOException {
+
+        request.setAttribute("errorMessage", message);
+        request.getRequestDispatcher("/signup.jsp")
                .forward(request, response);
     }
 }

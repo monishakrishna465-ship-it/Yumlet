@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import com.tap.util.DBConnection;
 
@@ -25,6 +26,7 @@ public class OrderTrackingServlet extends HttpServlet {
                          HttpServletResponse response)
             throws ServletException, IOException {
 
+        // Check whether the user is logged in
         HttpSession session = request.getSession(false);
 
         if (session == null || session.getAttribute("userId") == null) {
@@ -37,29 +39,35 @@ public class OrderTrackingServlet extends HttpServlet {
         int userId;
         int orderId;
 
+        // Validate the user ID and order ID
         try {
             userId = Integer.parseInt(
                 session.getAttribute("userId").toString()
             );
 
-            orderId = Integer.parseInt(
-                request.getParameter("orderId")
-            );
+            String orderIdParam = request.getParameter("orderId");
 
-            if (orderId <= 0) {
+            if (orderIdParam == null || orderIdParam.trim().isEmpty()) {
                 throw new NumberFormatException();
             }
 
-        } catch (Exception e) {
+            orderId = Integer.parseInt(orderIdParam);
+
+            if (userId <= 0 || orderId <= 0) {
+                throw new NumberFormatException();
+            }
+
+        } catch (NumberFormatException e) {
             response.sendError(
                 HttpServletResponse.SC_BAD_REQUEST,
-                "Invalid order ID."
+                "Invalid user ID or order ID."
             );
             return;
         }
 
         String sql =
-            "SELECT orderId, userId, orderDate, totalAmount, status, paymentMode " +
+            "SELECT orderId, userId, restaurantId, orderDate, " +
+            "totalAmount, status, paymentMode " +
             "FROM orders WHERE orderId = ? AND userId = ?";
 
         try (Connection con = DBConnection.getConnection();
@@ -72,36 +80,45 @@ public class OrderTrackingServlet extends HttpServlet {
 
                 if (rs.next()) {
 
-                    request.setAttribute("orderId",
-                        rs.getInt("orderId"));
+                    request.setAttribute(
+                        "orderId", rs.getInt("orderId")
+                    );
 
-                    request.setAttribute("orderDate",
-                        rs.getTimestamp("orderDate"));
+                    request.setAttribute(
+                        "restaurantId", rs.getInt("restaurantId")
+                    );
 
-                    request.setAttribute("totalAmount",
-                        rs.getBigDecimal("totalAmount"));
+                    request.setAttribute(
+                        "orderDate", rs.getTimestamp("orderDate")
+                    );
 
-                    request.setAttribute("orderStatus",
-                        rs.getString("status"));
+                    request.setAttribute(
+                        "totalAmount", rs.getBigDecimal("totalAmount")
+                    );
 
-                    request.setAttribute("paymentMode",
-                        rs.getString("paymentMode"));
+                    request.setAttribute(
+                        "orderStatus", rs.getString("status")
+                    );
 
+                    request.setAttribute(
+                        "paymentMode", rs.getString("paymentMode")
+                    );
+
+                    // Display the tracking JSP
                     request.getRequestDispatcher(
                         "/track-order.jsp"
                     ).forward(request, response);
 
                 } else {
-                    response.sendError(
-                        HttpServletResponse.SC_NOT_FOUND,
-                        "Order not found or you do not have permission to view it."
+                    response.sendRedirect(
+                        request.getContextPath() + "/orders"
                     );
                 }
             }
 
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new ServletException(
-                "Error retrieving order tracking information.", e
+                "Unable to retrieve order tracking details.", e
             );
         }
     }

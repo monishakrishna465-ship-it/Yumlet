@@ -15,6 +15,8 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet("/restaurant")
 public class RestaurantController extends HttpServlet {
 
+    private static final long serialVersionUID = 1L;
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -26,7 +28,7 @@ public class RestaurantController extends HttpServlet {
 
         req.setAttribute("restaurants", allRestaurants);
 
-        req.getRequestDispatcher("restaurants.jsp")
+        req.getRequestDispatcher("/restaurants.jsp")
            .forward(req, resp);
     }
 }

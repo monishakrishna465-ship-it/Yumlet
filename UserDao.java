@@ -1,7 +1,7 @@
+
 package com.tap.dao;
 
 import java.util.List;
-
 import com.tap.model.User;
 
 public interface UserDao {
@@ -18,6 +18,9 @@ public interface UserDao {
 
     // Update
     void updateUser(User user);
+
+    // Forgot Password: update password for a registered email
+    boolean updatePasswordByEmail(String email, String newPassword);
 
     // Delete
     void deleteUser(int userId);

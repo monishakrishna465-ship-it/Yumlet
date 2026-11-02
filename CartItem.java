@@ -1,3 +1,4 @@
+
 package com.tap.model;
 
 import java.math.BigDecimal;
@@ -10,19 +11,16 @@ public class CartItem {
     private String imagePath;
     private int quantity;
 
+    // Restaurant details for multi-restaurant ordering
+    private int restaurantId;
+    private String restaurantName;
 
-    // Default Constructor
     public CartItem() {
     }
 
-
-    // Constructor
-    public CartItem(int menuId,
-                    String itemName,
-                    BigDecimal price,
-                    String imagePath,
+    public CartItem(int menuId, String itemName,
+                    BigDecimal price, String imagePath,
                     int quantity) {
-
         this.menuId = menuId;
         this.itemName = itemName;
         this.price = price;
@@ -30,8 +28,15 @@ public class CartItem {
         this.quantity = quantity;
     }
 
+    public CartItem(int menuId, String itemName,
+                    BigDecimal price, String imagePath,
+                    int quantity, int restaurantId,
+                    String restaurantName) {
 
-    // Getters and Setters
+        this(menuId, itemName, price, imagePath, quantity);
+        this.restaurantId = restaurantId;
+        this.restaurantName = restaurantName;
+    }
 
     public int getMenuId() {
         return menuId;
@@ -41,7 +46,6 @@ public class CartItem {
         this.menuId = menuId;
     }
 
-
     public String getItemName() {
         return itemName;
     }
@@ -49,7 +53,6 @@ public class CartItem {
     public void setItemName(String itemName) {
         this.itemName = itemName;
     }
-
 
     public BigDecimal getPrice() {
         return price;
@@ -59,7 +62,6 @@ public class CartItem {
         this.price = price;
     }
 
-
     public String getImagePath() {
         return imagePath;
     }
@@ -67,7 +69,6 @@ public class CartItem {
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
     }
-
 
     public int getQuantity() {
         return quantity;
@@ -77,14 +78,27 @@ public class CartItem {
         this.quantity = quantity;
     }
 
+    public int getRestaurantId() {
+        return restaurantId;
+    }
 
-    // Calculate total for this item
+    public void setRestaurantId(int restaurantId) {
+        this.restaurantId = restaurantId;
+    }
+
+    public String getRestaurantName() {
+        return restaurantName;
+    }
+
+    public void setRestaurantName(String restaurantName) {
+        this.restaurantName = restaurantName;
+    }
 
     public BigDecimal getTotalPrice() {
+        if (price == null) {
+            return BigDecimal.ZERO;
+        }
 
-        return price.multiply(
-            BigDecimal.valueOf(quantity)
-        );
-
+        return price.multiply(BigDecimal.valueOf(quantity));
     }
 }
